@@ -57,16 +57,22 @@ Deep learning has advanced intrusion detection by automating feature extraction 
 
 Multitask learning (MTL) generalises these ideas by sharing feature representations across related tasks. A single CNN–Transformer encoder can feed two lightweight heads: one for device identification and one for intrusion detection. MTL offers three major advantages:
 \begin{itemize}
-    \item \textbf{Efficiency:} Shared layers reduce redundant computation, improving inference speed and memory efficiency.
-    \item \textbf{Generalisation:} Shared inductive bias helps the model adapt to unseen devices or attack types.
-    \item \textbf{Operational simplicity:} A unified model simplifies deployment pipelines and monitoring.
+    \item Shared layers reduce redundant computation, improving inference speed and memory efficiency.
+    \item  Shared inductive bias helps the model adapt to unseen devices or attack types.
+    \item  A unified model simplifies deployment pipelines and monitoring.
 \end{itemize}
 
-\textbf{[Insert Figure 2: Conceptual diagram of the proposed multitask CNN–Transformer architecture.]}  
-\emph{Suggestion: show shared encoder block feeding two heads—(1) IoT device ID, (2) intrusion classification—annotated with flow of data from input features to predictions.}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{figures/Fig-2.png}
+  \caption{Conceptual diagram of the proposed multitask CNN Transformer architecture showing a shared encoder block with two task-specific heads for IoT device identification and intrusion detection.}
+  \label{fig:shared-encoder}
+\end{figure}
+
 
 \subsection{Contribution and Integration into Cloud Environments}
-Building on these insights, this research develops a \emph{cloud-deployed multitask CNN–Transformer} framework capable of simultaneous IoT device identification and intrusion detection. The model is trained and evaluated on the CIC IoT-IDAD 2024 dataset, which includes benign and attack flows across multiple IoT device classes and attack families.  
+Building on these insights, this research develops a cloud-deployed multitask CNN Transformer framework capable of simultaneous IoT device identification and intrusion detection. The model is trained and evaluated on the CIC IoT-IDAD 2024 dataset, which includes benign and attack flows across multiple IoT device classes and attack families.  
 \vspace{0.2cm}
 
 Key contributions include:
@@ -91,40 +97,39 @@ Most research still evaluates models offline on benchmark datasets, ignoring dep
 Hence, there is a critical need for a unified, scalable, and cloud-operational deep-learning framework that can perform both tasks concurrently, maintaining low latency, interpretability of performance metrics, and operational reliability.
 
 \section{Research Aim}
-The aim of this research is to design, implement, and evaluate a multitask CNN–Transformer framework for concurrent IoT device identification and intrusion detection. The framework should achieve high classification accuracy and low inference latency while supporting scalable deployment through FastAPI microservices on AWS ECS, automated CI/CD, and real-time monitoring with Prometheus and Grafana.
+The aim of this research is to develop and deploy a cloud-based multitask CNN Transformer framework that concurrently identifies IoT devices and detects intrusions, achieving high accuracy and low latency through a FastAPI microservice on AWS ECS with automated CI/CD and real-time monitoring.
 
 \section{Research Objectives}
 \begin{enumerate}
-    \item \textbf{Dataset Analysis and Preparation:} Conduct exploratory data analysis on the CIC IoT-IDAD 2024 dataset to identify device categories, attack types, feature distributions, and class imbalance. Implement preprocessing pipelines including normalisation, feature encoding, and stratified splitting.
-    \item \textbf{Multitask Architecture Development:} Design a hybrid CNN–Transformer encoder with task-specific heads for device identification and intrusion detection. Experiment with depth, attention mechanisms, and regularisation strategies.
-    \item \textbf{Model Training and Optimisation:} Configure multitask loss functions and optimisation algorithms. Apply cross-validation and evaluate model convergence, preventing overfitting through dropout and early stopping.
-    \item \textbf{Baseline Benchmarking:} Train and compare XGBoost, BiLSTM, and TabNet models to the proposed framework using accuracy, F1-score, ROC-AUC, latency, and memory metrics.
-    \item \textbf{Production Deployment:} Develop a FastAPI service exposing REST endpoints. Containerise the model with Docker and deploy to AWS ECS with load balancing and health checks. Automate testing and deployment through GitHub Actions.
-    \item \textbf{Monitoring and Observability:} Integrate Prometheus and Grafana dashboards to monitor request throughput, latency, system load, and error rates. Configure alerting for anomaly detection.
-    \item \textbf{Performance Evaluation:} Conduct stress tests under varying network loads to assess scalability and resilience. Analyse outcomes to identify limitations and areas for future research.
+    \item Analyse and preprocess the CIC IoT-IDAD 2024 dataset to handle class imbalance and extract relevant flow-based features.  
+    \item Design a multitask CNN Transformer with shared encoder and dual heads for IoT device identification and intrusion detection.  
+    \item Train and evaluate the model against baselines (XGBoost, BiLSTM, TabNet) using accuracy, F1-score, and latency metrics.  
+    \item Containerise the trained model as a FastAPI microservice and deploy it on AWS ECS with automated CI/CD pipelines.  
+    \item Integrate Prometheus and Grafana for real-time monitoring, scalability assessment, and performance validation.  
 \end{enumerate}
 
 \section{Scope and Delimitations}
+
+This research focuses on developing a cloud-deployed multitask deep learning framework capable of performing IoT device identification and intrusion detection simultaneously. The project scope has been defined to ensure academic depth, technical feasibility, and reproducibility within available resources.
+
 \subsection{Dataset}
-\textbf{Included:} CIC IoT-IDAD 2024, a publicly available dataset covering multiple IoT devices and attack categories.  
-\textbf{Excluded:} Proprietary or undisclosed datasets, synthetic data generation, or other domain-specific traffic not aligned with the target scenario.
+
+The study utilises the CIC IoT-IDAD 2024 dataset, a publicly available benchmark for IoT security research hosted by the Canadian Institute for Cybersecurity at the University of New Brunswick (\citeauthor{CIC2024}, \citeyear{CIC2024}). It contains flow-based network traffic generated from multiple IoT devices and includes both benign and attack samples across categories such as DDoS, DoS, Mirai, Spoofing, and Web-based intrusions (\citeauthor{Tseng2024}, \citeyear{Tseng2024}; \citeauthor{Laghari2024}, \citeyear{Laghari2024}). This dataset provides realistic, well-structured traffic suitable for supervised learning and reproducible experimentation. Proprietary, undisclosed, or synthetic datasets are excluded to maintain transparency and ensure open access for validation.
 
 \subsection{Model Architecture}
-\textbf{Included:} Multitask CNN–Transformer with shared encoder; baselines XGBoost, BiLSTM, TabNet.  
-\textbf{Excluded:} Generative adversarial networks, reinforcement learning, LLM-based log analysis, graph neural networks, and federated learning due to time and computational constraints.
+
+The proposed framework employs a multitask CNN–Transformer model with a shared encoder and two task-specific heads for IoT device identification and intrusion detection. Comparative baselines include XGBoost, BiLSTM, and TabNet, allowing direct performance benchmarking across accuracy, latency, and computational efficiency metrics (\citeauthor{Gueriani2024}, \citeyear{Gueriani2024}; \citeauthor{Patil2025}, \citeyear{Patil2025}). Other complex architectures such as generative adversarial networks, reinforcement learning, large language models, graph neural networks, and federated learning are excluded due to time and resource constraints.
 
 \subsection{Deployment}
-\textbf{Included:} Docker containerisation, AWS ECS orchestration, CI/CD (GitHub Actions), FastAPI interface, and monitoring with Prometheus and Grafana.  
-\textbf{Excluded:} Edge deployment, FPGA/ASIC acceleration, or non-AWS platforms (Azure, GCP).
+
+The deployment scope covers containerisation using Docker, orchestration via AWS Elastic Container Service (ECS), and continuous integration and delivery (CI/CD) through GitHub Actions. The final model is exposed as a FastAPI microservice and monitored using Prometheus and Grafana for real-time performance insights (\citeauthor{Naayini2025}, \citeyear{Naayini2025}). Alternative edge or FPGA deployments and non-AWS platforms such as Azure or Google Cloud are excluded to maintain architectural consistency.
 
 \subsection{Evaluation Metrics}
-\textbf{Included:} Accuracy, precision, recall, F1-score, ROC-AUC, latency (mean/percentile), throughput, memory utilisation, and confusion matrices.  
-\textbf{Excluded:} Energy consumption, cost analysis, adversarial robustness, and formal verification.
 
-\subsection{Regulatory and Compliance}
-\textbf{Included:} Discussion of privacy (GDPR, CCPA) and secure handling of traffic data.  
-\textbf{Excluded:} Full compliance audits or certification studies (ISO 27001, SOC 2).
+Model evaluation follows established practices in network intrusion detection research, using metrics such as accuracy, precision, recall, F1-score, ROC-AUC, latency (mean and percentile), throughput, memory utilisation, and confusion matrices (\citeauthor{Nazir2025}, \citeyear{Nazir2025}). Metrics concerning energy efficiency, adversarial robustness, cost analysis, or formal verification are excluded but recognised as relevant for future work.
 
-This scoped design ensures depth and feasibility within academic and resource constraints while producing a reproducible, cloud-operational multitask intrusion detection framework.
+\subsection{Regulatory and Compliance Considerations}
 
-% End of introduction.tex
+The research considers privacy and data protection principles in accordance with the General Data Protection Regulation (GDPR) and the California Consumer Privacy Act (CCPA), ensuring ethical handling of network data and model outputs (\citeauthor{Pavlidis2024}, \citeyear{Pavlidis2024}; \citeauthor{Nolte2025}, \citeyear{Nolte2025}). However, full compliance audits or formal certifications (e.g., ISO 27001 or SOC 2) are outside the project’s academic remit.
+
+This scoped design ensures a balanced and reproducible contribution by integrating deep learning, cloud deployment, and real-time monitoring into a unified operational framework for IoT security. It aligns with the academic standards of applied research while remaining feasible within the MSc Artificial Intelligence programme at Dublin Business School.
