@@ -1,22 +1,253 @@
 \section{Research Design}
-\subsection{CRISP-DM Overview}
-\subsection{Assumptions and Risks}
+
+This research follows the Cross-Industry Standard Process for Data Mining (CRISP-DM) framework, which provides a structured and iterative methodology for the end-to-end lifecycle of data-driven system development. CRISP-DM consists of six stages: business understanding, data understanding, data preparation, modelling, evaluation, and deployment. These phases correspond closely to the objectives of this project, which aims to design, train, and deploy a multitask deep-learning microservice for simultaneous IoT device identification and intrusion detection.
+
+The framework supports continuous feedback loops, enabling improvements in data preprocessing, feature selection, and model refinement through empirical evaluation. This iterative structure supports reproducibility, performance optimisation, and consistent deployment across all stages.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/Fig-CRISPDM.png}
+    \caption{CRISP-DM process applied to the development of the multitask CNN–Transformer framework.}
+    \label{fig:crispdm}
+\end{figure}
+
+\begin{table}[h]
+    \centering
+    \caption{Mapping of CRISP-DM phases to research activities.}
+    \label{tab:crispdm_map}
+    \begin{tabular}{p{3cm}p{6cm}p{5cm}}
+    \toprule
+    \textbf{Phase} & \textbf{Study Implementation} & \textbf{Output Artifact} \\
+    \midrule
+    Business Understanding & Define IoT security gaps and project objectives & Project aim and objectives \\
+    Data Understanding & Explore CIC IoT-IDAD 2024 dataset & Descriptive statistics, flow distributions \\
+    Data Preparation & Clean, normalize, and balance data & Processed dataset and DVC versions \\
+    Modelling & Build CNN–Transformer multitask model & Trained shared encoder and baselines \\
+    Evaluation & Validate accuracy, latency, and scalability & Evaluation tables and graphs \\
+    Deployment & Containerize and deploy via FastAPI on AWS ECS & Cloud microservice with CI/CD \\
+    \bottomrule
+    \end{tabular}
+\end{table}
 
 \section{Data Pipeline}
+
 \subsection{Dataset Description}
-\subsection{Preprocessing and Feature Engineering}
+
+The study employs the CIC IoT-IDAD 2024 dataset, developed by the Canadian Institute for Cybersecurity (2024). It consists of realistic flow-based network traffic collected from multiple IoT devices under benign and malicious conditions. Each record includes 84 statistical features derived from packet captures, covering metrics such as flow duration, packet counts, byte rates, and flag counts. The dataset supports dual-label tasks: device identification and intrusion detection, making it suitable for multitask learning.
+
+The dataset encompasses eight major attack categories—Brute Force, DoS, DDoS, Mirai, Reconnaissance, Spoofing, Web-based, and SQL Injection—along with benign traffic. It captures over 3 GB of flow records across multiple days of simulated IoT operations. Each flow is timestamped and tagged, allowing sequential modelling of temporal behaviour.
+
+\begin{table}[h]
+    \centering
+    \caption{Composition of the CIC IoT-IDAD 2024 dataset.}
+    \label{tab:dataset_composition}
+    \begin{tabular}{lccc}
+    \toprule
+    \textbf{Traffic Category} & \textbf{Files} & \textbf{Samples (×10\textsuperscript{3})} & \textbf{Label Type} \\
+    \midrule
+    Benign & 4 & 900 & Device / Normal \\
+    DDoS & 3 & 680 & Attack \\
+    DoS & 2 & 540 & Attack \\
+    Mirai & 2 & 320 & Attack \\
+    Spoofing & 1 & 250 & Attack \\
+    Reconnaissance & 1 & 230 & Attack \\
+    Web-based & 2 & 310 & Attack \\
+    SQL Injection & 1 & 110 & Attack \\
+    \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/Fig-dataset-distribution.png}
+    \caption{Distribution of flow records per attack category in CIC IoT-IDAD 2024, highlighting data imbalance across classes.}
+    \label{fig:data_dist}
+\end{figure}
+
+\subsection{Pre-processing and Feature Engineering}
+
+IoT flow data contain redundant and inconsistent values. The preprocessing pipeline standardises feature scales and ensures temporal integrity before model ingestion.  
+Steps include:
+\begin{itemize}
+    \item Removal of duplicates and flows with missing feature values.
+    \item Z-score normalisation across numeric features to stabilise gradient updates.
+    \item Encoding of categorical protocol identifiers into one-hot vectors.
+    \item Balancing of minority attack classes via Synthetic Minority Oversampling Technique (SMOTE).
+    \item Generation of derived temporal features such as inter-packet intervals and session entropy to capture sequential patterns.
+\end{itemize}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/Fig-preprocessing-pipeline.png}
+    \caption{Data preprocessing workflow from raw CSV to model-ready dataset.}
+    \label{fig:preprocess}
+\end{figure}
+
 \subsection{Splits and Versioning}
 
-\section{Models}
-\subsection{Baselines: XGBoost, TabNet, BiLSTM}
-\subsection{Proposed CNN–Transformer Shared Encoder}
-\subsection{Hyperparameter Optimisation (Optuna)}
+The dataset is divided into training, validation, and test sets in a 70 : 15 : 15 ratio, stratified by both attack type and device ID to prevent data leakage. Data Version Control (DVC) tracks all intermediate transformations and computes SHA-256 checksums to guarantee reproducibility.
 
-\section{Explainability and Compliance}
-\subsection{SHAP Integration}
-\subsection{Compliance Logging and Audit Trails}
+\begin{table}[h]
+    \centering
+    \caption{Dataset partitions and record counts.}
+    \label{tab:splits}
+    \begin{tabular}{lcc}
+    \toprule
+    \textbf{Subset} & \textbf{Percentage} & \textbf{Records (×10\textsuperscript{3})} \\
+    \midrule
+    Training & 70 \% & 2 940 \\
+    Validation & 15 \% & 630 \\
+    Testing & 15 \% & 630 \\
+    \bottomrule
+    \end{tabular}
+\end{table}
+
+\section{Model Architecture}
+
+\subsection{Baseline Models}
+
+To establish performance references, three well-known baselines are trained:
+\begin{itemize}
+    \item \textbf{XGBoost:} Gradient-boosted trees with learning rate 0.05, max depth 6.
+    \item \textbf{BiLSTM:} Two bidirectional LSTM layers (64 units) + dense softmax.
+    \item \textbf{TabNet:} Attention-based tabular network with 16 decision steps.
+\end{itemize}
+
+\begin{table}[h]
+    \centering
+    \caption{Baseline model configurations.}
+    \label{tab:baselines}
+    \begin{tabular}{lccc}
+    \toprule
+    \textbf{Model} & \textbf{Learning Rate} & \textbf{Epochs} & \textbf{Optimizer} \\
+    \midrule
+    XGBoost & 0.05 & 200 & – (tree-based) \\
+    BiLSTM & 0.001 & 80 & Adam \\
+    TabNet & 0.002 & 120 & AdamW \\
+    \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{Proposed CNN–Transformer Shared Encoder}
+
+The proposed architecture combines one-dimensional convolutional layers for local spatial correlation learning with Transformer encoder blocks that capture long-range temporal dependencies. The CNN layers extract short-term statistical dependencies between flow features, while the Transformer component uses self-attention to model context over multiple flows.
+
+A shared encoder feeds two lightweight task-specific classification heads: one for IoT device identification and one for intrusion detection. Both tasks use cross-entropy loss, optimised jointly through proportional loss weighting (0.5 : 0.5). Parameter sharing reduces memory consumption and improves generalisation across related tasks.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+    node distance=1.2cm and 1cm,
+    box/.style={rectangle, draw, rounded corners, text width=4cm, align=center, minimum height=1cm, font=\small, fill=blue!10},
+    arrow/.style={-Stealth, thick}
+]
+
+\node[box, fill=yellow!20] (input) {Input Layer \\ (84 Flow Features)};
+\node[box, below=of input] (conv1) {1D Conv Block 1 \\ 64 filters, kernel=3, ReLU};
+\node[box, below=of conv1] (conv2) {1D Conv Block 2 \\ 128 filters, kernel=3, ReLU};
+\node[box, fill=green!20, below=of conv2] (transformer) {Transformer Encoder ×2 \\ 8 heads, GELU, Positional Encoding};
+\node[box, below=of transformer] (pool) {Global Average Pooling};
+\node[box, fill=orange!20, below=of pool] (shared) {Shared Latent Representation (256-D) \\ (feature space shared across tasks)};
+\node[box, fill=purple!20, below left=1.5cm and -1cm of shared] (head1) {Head 1: IoT Device Identification \\ Dense + Softmax};
+\node[box, fill=purple!20, below right=1.5cm and -1cm of shared] (head2) {Head 2: Intrusion Detection \\ Dense + Softmax};
+
+\draw[arrow] (input) -- (conv1);
+\draw[arrow] (conv1) -- (conv2);
+\draw[arrow] (conv2) -- (transformer);
+\draw[arrow] (transformer) -- (pool);
+\draw[arrow] (pool) -- (shared);
+\draw[arrow] (shared) -- (head1);
+\draw[arrow] (shared) -- (head2);
+
+\end{tikzpicture}
+\caption{Proposed CNN–Transformer shared encoder architecture.}
+\label{fig:architecture}
+\end{figure}
+
+\begin{table}[h]
+    \centering
+    \caption{Layer-wise architecture summary.}
+    \label{tab:layers}
+    \begin{tabular}{llll}
+    \toprule
+    \textbf{Layer} & \textbf{Type} & \textbf{Output Shape} & \textbf{Activation} \\
+    \midrule
+    Input & Flow Features (84) & (84, 1) & – \\
+    Conv1D-1 & Kernel 3, Filters 64 & (82, 64) & ReLU \\
+    Conv1D-2 & Kernel 3, Filters 128 & (80, 128) & ReLU \\
+    Transformer Encoder ×2 & Multi-head (8) & (80, 128) & GELU \\
+    Global Average Pooling & – & (128) & – \\
+    Dense (256) & Shared Latent & (256) & ReLU \\
+    Head 1: Device ID & Softmax & (num\_devices) & – \\
+    Head 2: Intrusion Class & Softmax & (num\_attacks) & – \\
+    \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{Hyperparameter Optimisation}
+
+Hyperparameters are tuned using Optuna’s Tree-Structured Parzen Estimator (TPE). The optimisation objectives include maximising macro-F1 for both tasks and minimising latency under 100~ms per 1\,000 flows. Each trial logs metrics to Weights \& Biases for transparent tracking and reproducibility.
 
 \section{Experimental Setup}
+
 \subsection{Hardware and Software}
+
+Experiments are conducted across hybrid infrastructure comprising Google Colab Pro+, Kaggle Notebooks, and a local workstation with an RTX 3060 GPU. Containerisation with Docker ensures identical runtime environments across local and cloud execution.  
+Key software versions: Python 3.10, PyTorch 2.2, Optuna 3.4, and FastAPI 0.111.
+
+\begin{table}[h]
+    \centering
+    \caption{Hardware and software stack used for experimentation.}
+    \label{tab:hardware}
+    \begin{tabular}{lll}
+    \toprule
+    \textbf{Component} & \textbf{Specification} & \textbf{Purpose} \\
+    \midrule
+    GPU & NVIDIA A100 / RTX 3060 (8–40 GB VRAM) & Model training and inference \\
+    CPU & Intel i7 12-Core / Colab TPU v2 & Baseline training \\
+    Memory & 16–32 GB RAM & Data processing \\
+    Frameworks & PyTorch, Optuna, FastAPI & Modelling and deployment \\
+    CI/CD & GitHub Actions, AWS ECS/ECR & Automation and cloud deployment \\
+    Monitoring & Prometheus, Grafana & Latency and resource metrics \\
+    \bottomrule
+    \end{tabular}
+\end{table}
+
 \subsection{Training Protocols}
+
+Each model is trained using the Adam optimizer with an initial learning rate of 0.001, decayed by 0.1 after ten epochs without improvement. Early stopping with patience $=10$ prevents overfitting. Batch size $= 1{,}024$ balances GPU throughput and gradient stability. Weighted cross-entropy compensates for class imbalance. All random seeds are fixed for reproducibility.
+
 \subsection{Evaluation Metrics and Tests}
+
+Model performance is assessed through both classification and operational metrics:
+
+\begin{itemize}
+    \item \textbf{Accuracy} – overall correctness of predictions.
+    \item \textbf{Macro-F1} – harmonic mean of precision and recall, robust to imbalance.
+    \item \textbf{AUROC and PR-AUC} – threshold-independent performance.
+    \item \textbf{Latency (ms / 1 000 flows)} – inference efficiency.
+    \item \textbf{Memory Usage (MB)} – runtime footprint.
+\end{itemize}
+
+\begin{table}[h]
+    \centering
+    \caption{Evaluation metrics and definitions.}
+    \label{tab:metrics}
+    \begin{tabular}{p{3cm}p{7cm}p{3cm}}
+    \toprule
+    \textbf{Metric} & \textbf{Formula / Description} & \textbf{Reference} \\
+    \midrule
+    Accuracy & $(TP+TN)/(TP+FP+TN+FN)$ & Nazir et al., 2025 \\
+    Macro-F1 & $2 \times (Precision \times Recall) / (Precision + Recall)$ & Tseng et al., 2024 \\
+    AUROC / PR-AUC & Area under ROC / Precision–Recall curve & Standard definition \\
+    Latency & Mean inference time per 1 000 flows & Author’s measurement \\
+    Memory Usage & Peak GPU memory allocation & Author’s measurement \\
+    \bottomrule
+    \end{tabular}
+\end{table}
+
+Robustness checks include Gaussian noise injection (5\%) and limited label perturbation (10\%) to observe stability under minor data shifts. Statistical validation follows paired t-tests, McNemar’s $\chi^{2}$ tests, and 95\% bootstrap confidence intervals to ensure significance of improvements over single-task baselines.
+
+\section{Summary}
+
+This chapter defined the methodological foundation for developing a cloud-deployed multitask deep-learning framework for IoT security. The workflow aligns with CRISP-DM principles. Data from the CIC IoT-IDAD 2024 dataset is processed into standardised flows, fed into a CNN–Transformer encoder, and evaluated using rigorous statistical validation. The following chapter details the implementation, deployment, and monitoring of the trained model as a FastAPI microservice.

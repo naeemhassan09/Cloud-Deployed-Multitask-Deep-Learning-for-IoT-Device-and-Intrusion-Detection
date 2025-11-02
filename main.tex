@@ -6,6 +6,11 @@
 \raggedbottom
 \setlength{\parskip}{0pt plus 1pt}
 
+
+\usepackage{tikz}
+\usetikzlibrary{shapes, arrows.meta, positioning}
+
+
 % Fonts and spacing
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
@@ -26,13 +31,33 @@
 \usepackage{csquotes}
 \usepackage[backend=biber,style=authoryear,maxcitenames=2,maxbibnames=6]{biblatex}
 \addbibresource{references.bib}
-\setlength{\bibhang}{1.5em}          % indent for lines after the first
-\setlength{\bibitemsep}{0.6\baselineskip} % vertical space between items
-\defbibheading{references}{%
-  \section*{References}%
-  \addcontentsline{toc}{section}{References}%
-}
 
+% Spacing between entries (tweak as desired)
+\setlength{\bibitemsep}{0.6\baselineskip}
+
+% Hanging indent that works regardless of class/list settings
+\newlength{\mybibhang}
+\setlength{\mybibhang}{1.5em}
+
+\defbibenvironment{bibliography}
+  {\list{}{%
+     \setlength{\leftmargin}{\mybibhang}%
+     \setlength{\itemindent}{-\mybibhang}%
+     \setlength{\itemsep}{\bibitemsep}%
+     \setlength{\parsep}{0pt}%
+     \setlength{\topsep}{0pt}%
+  }}
+  {\endlist}
+  {\item}
+
+% Clean, consistent font for refs (no full justification needed)
+\renewcommand*{\bibfont}{\normalfont\normalsize}
+
+% Heading as "References" for report class
+\defbibheading{references}{%
+  \chapter*{References}%
+  \addcontentsline{toc}{chapter}{References}%
+}
 % Headers/footers
 \usepackage{fancyhdr}
 \pagestyle{fancy}
@@ -54,12 +79,6 @@
 \titlespacing*{\subsection}{0pt}{1.0\baselineskip}{0.5\baselineskip}
 
 
-\usepackage{catchfile}
-\newcommand\wordcount{%
-  \immediate\write18{texcount -1 -sum -merge main.tex > \jobname.wordcount.tex}%
-  \CatchFileDef{\wccontent}{\jobname.wordcount.tex}{}%
-  Word count: \wccontent%
-}
 
 % Float policy
 \usepackage{placeins}
