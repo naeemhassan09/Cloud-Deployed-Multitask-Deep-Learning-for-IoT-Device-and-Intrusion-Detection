@@ -1,0 +1,54 @@
+% chapters/introduction.tex
+\section{Background and Motivation}
+The Internet of Things (IoT) represents one of the most transformative technological evolutions of the modern era. By 2025, it is estimated that over 75 billion interconnected IoT devices will be active globally, spanning smart homes, industrial control systems, healthcare, and critical infrastructure \parencite{Laghari2024}. This unprecedented interconnectivity has also expanded the digital attack surface, making IoT environments increasingly vulnerable to malicious activity. Attacks such as Distributed Denial of Service (DDoS), botnets, ransomware, and spoofing continue to exploit weak authentication, resource constraints, and inconsistent vendor security practices \parencite{Patil2025, Nazir2025}.  
+
+Traditional cybersecurity mechanisms such as rule-based Intrusion Detection Systems (IDS) are inadequate for IoT networks because they rely on predefined signatures and cannot adapt to evolving threat patterns. Machine learning-based intrusion detection methods have shown strong potential, but their generalization across heterogeneous IoT devices remains limited due to non-standard traffic characteristics and low device processing power \parencite{Alsubaei2025}. Furthermore, maintaining high detection accuracy while minimizing latency and computational overhead is critical for real-time protection in production systems.
+
+Recent advances in deep learning — particularly Convolutional Neural Networks (CNNs) and Transformer models — offer powerful means to extract spatial and temporal relationships within network traffic. CNNs excel at identifying spatial dependencies across packet features, whereas Transformer architectures capture sequential dependencies over time \parencite{Ullah2023}. Combining both in a shared encoder enables simultaneous learning of device-specific fingerprints and anomalous behaviour patterns. Such multitask learning frameworks can reduce redundancy, improve efficiency, and strengthen generalization across related security tasks.
+
+However, many AI-based intrusion detection systems still function as opaque “black boxes,” limiting their adoption in critical applications. Stakeholders require transparency to understand model decisions, validate security alerts, and ensure regulatory compliance. The European Union Artificial Intelligence Act (EU AI Act) mandates that high-risk AI systems, such as those used in cybersecurity, must be transparent, robust, and auditable. Articles 15 and 18 specifically require systems to demonstrate accuracy, resilience, and traceable decision-making \parencite{Nolte2025}.  
+
+In this context, the integration of explainable AI (XAI) techniques becomes essential. Lightweight feature attribution methods, such as SHAP (Shapley Additive Explanations), can highlight which network features contribute most to model predictions. When combined with automated monitoring and logging pipelines, these methods enable transparency and accountability without compromising performance.  
+
+This research addresses these challenges by developing a cloud-deployed multitask deep learning framework capable of identifying IoT devices and detecting intrusions simultaneously. The framework employs a CNN–Transformer shared encoder trained on the CIC IoT-IDAD 2024 dataset and benchmarks its performance against established single-task models such as XGBoost, BiLSTM, and TabNet. The trained model is packaged as a FastAPI microservice, containerized with Docker, deployed on AWS ECS, and continuously monitored via Prometheus and Grafana. This end-to-end integration demonstrates not only model performance but also operational feasibility and scalability in real-world cloud environments.
+
+\section{Problem Statement}
+The security of IoT ecosystems remains a critical concern due to device heterogeneity, constrained hardware, and rapidly evolving cyber threats. Existing Intrusion Detection Systems (IDS) are often optimized for enterprise networks and struggle to adapt to the dynamic nature of IoT communications, where lightweight and real-time detection is mandatory. Furthermore, most models treat IoT device identification and intrusion detection as separate tasks, resulting in redundant computation and limited contextual awareness.  
+
+Machine learning-based intrusion detection has achieved promising results but typically focuses on single-task architectures. While these models can identify known attack patterns, they fail to leverage shared information between device-level behaviour and malicious activity signatures. This isolation leads to inefficiencies in both training and inference and restricts the ability to detect unseen attack variants.  
+
+Another challenge is the lack of explainability and governance in current AI-driven IDS solutions. Many deep models achieve high accuracy but provide little insight into the rationale behind their predictions. This opacity limits operator trust, complicates debugging, and poses compliance risks under the EU AI Act, which requires transparent and auditable decision-making processes for high-risk systems.  
+
+In addition, practical deployment challenges persist. Many academic models overlook production-readiness factors such as latency, resource consumption, CI/CD automation, and cloud observability. Without operational integration, even high-performing models fail to transition from research prototypes to deployable cybersecurity solutions.  
+
+Therefore, there is a need for a unified, explainable, and cloud-deployable multitask model that simultaneously performs IoT device identification and intrusion detection efficiently, while maintaining interpretability, scalability, and compliance with modern AI governance standards.
+
+\section{Aim}
+The aim of this research is to design, implement, and evaluate a multitask deep learning framework that can simultaneously perform IoT device identification and intrusion detection. The framework seeks to achieve higher accuracy and lower latency than comparable single-task models while maintaining lightweight interpretability through SHAP-based explanations. It will be deployed as a scalable FastAPI microservice on AWS ECS with full CI/CD automation and real-time monitoring to validate its practical viability.
+
+\section{Objectives}
+To achieve this aim, the research pursues the following specific objectives:
+\begin{enumerate}
+    \item \textbf{Develop and train a shared CNN–Transformer encoder} using the CIC IoT-IDAD 2024 dataset to jointly perform device identification and intrusion detection, optimizing for accuracy, precision, recall, F1-score, and AUC.
+    \item \textbf{Benchmark multitask performance} against single-task baselines (XGBoost, BiLSTM, TabNet) to assess computational efficiency, scalability, and latency improvements.
+    \item \textbf{Integrate lightweight SHAP-based explainability} for model interpretability, providing visual and numerical insights into feature importance without extensive computational overhead.
+    \item \textbf{Deploy the framework as a containerized FastAPI microservice} using Docker and AWS ECS, with continuous integration and deployment via automated CI/CD pipelines.
+    \item \textbf{Implement monitoring and evaluation pipelines} using Prometheus and Grafana to track model performance, latency, and system reliability in real time.
+\end{enumerate}
+
+\section{Scope and Delimitations}
+The scope of this research is carefully bounded to ensure a focused and reproducible study. It concentrates on the training, evaluation, and deployment of a multitask CNN–Transformer model for IoT device identification and intrusion detection using the publicly available CIC IoT-IDAD 2024 dataset.  
+
+The inclusion and exclusion boundaries are defined as follows:
+
+\begin{itemize}
+    \item \textbf{Dataset:} Only the CIC IoT-IDAD 2024 dataset is used for model development and testing. No proprietary or undisclosed datasets are included to ensure reproducibility and ethical compliance.
+    \item \textbf{Models:} The study includes a multitask CNN–Transformer as the proposed model and compares it with single-task baselines — XGBoost, BiLSTM, and TabNet. Generative Adversarial Networks (GANs), reinforcement learning, or large-scale language models are excluded to maintain scope alignment and computational feasibility.
+    \item \textbf{Deployment:} The system is deployed as a cloud-based FastAPI microservice on AWS ECS, with Docker-based containerization, CI/CD automation, and monitoring using Prometheus and Grafana. Edge, FPGA, or on-device deployments are excluded due to hardware variability and time constraints.
+    \item \textbf{Explainability:} Lightweight SHAP visualizations are implemented for interpretability. Comprehensive fairness audits or multi-model interpretability frameworks are beyond the project scope.
+    \item \textbf{Evaluation Metrics:} The study evaluates models using accuracy, precision, recall, F1-score, AUC, and inference latency. Metrics such as energy efficiency or carbon footprint are excluded due to limited relevance to research objectives.
+\end{itemize}
+
+This delimitation ensures that the research remains concentrated on delivering an end-to-end cloud-deployable multitask IDS framework that is experimentally validated, interpretable, and aligned with operational IoT security needs.  
+
+By integrating multitask deep learning, explainability, and cloud-native deployment, the study contributes a practical and academically rigorous artefact demonstrating how IoT security systems can evolve toward efficiency, transparency, and compliance within real-world infrastructures.

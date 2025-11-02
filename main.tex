@@ -1,0 +1,135 @@
+\documentclass[12pt,a4paper]{report}
+
+% Page layout
+\usepackage[a4paper,margin=1in]{geometry}
+\raggedbottom
+\setlength{\parskip}{0pt plus 1pt}
+
+% Fonts and spacing
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{setspace}
+\onehalfspacing
+
+% Graphics/tables
+\usepackage{graphicx,booktabs,caption,subcaption,siunitx}
+
+% Links and refs
+\usepackage[hidelinks]{hyperref}
+\usepackage{cleveref}
+
+% Citations
+\usepackage{csquotes}
+\usepackage[backend=biber,style=authoryear,maxcitenames=2,maxbibnames=6]{biblatex}
+\addbibresource{references.bib}
+
+
+
+% Headers/footers
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\makeatletter
+\renewcommand{\chaptermark}[1]{\markboth{\thechapter\ #1}{}}
+\renewcommand{\sectionmark}[1]{\markright{\thesection\ #1}}
+\makeatother
+\lhead{\leftmark}
+\rhead{\thepage}
+\setlength{\headheight}{14.5pt}
+\setlength{\headsep}{18pt}
+
+% Chapter/section formatting
+\usepackage{titlesec}
+\titleformat{\chapter}[hang]{\bfseries\LARGE}{\thechapter\ }{0pt}{\LARGE}
+\titlespacing*{\chapter}{0pt}{1.5\baselineskip}{0.8\baselineskip}
+\titlespacing*{\section}{0pt}{1.1\baselineskip}{0.6\baselineskip}
+\titlespacing*{\subsection}{0pt}{1.0\baselineskip}{0.5\baselineskip}
+
+
+\usepackage{catchfile}
+\newcommand\wordcount{%
+  \immediate\write18{texcount -1 -sum -merge main.tex > \jobname.wordcount.tex}%
+  \CatchFileDef{\wccontent}{\jobname.wordcount.tex}{}%
+  Word count: \wccontent%
+}
+
+% Float policy
+\usepackage{placeins}
+\setcounter{topnumber}{2}
+\setcounter{bottomnumber}{1}
+\setcounter{totalnumber}{3}
+\renewcommand{\textfraction}{0.15}
+\renewcommand{\topfraction}{0.85}
+\renewcommand{\bottomfraction}{0.65}
+
+% Prevent orphaned headings at page bottom (light)
+\usepackage{needspace}
+\let\OldSection\section
+\renewcommand{\section}{\needspace{3\baselineskip}\OldSection}
+\let\OldSubsection\subsection
+\renewcommand{\subsection}{\needspace{2.5\baselineskip}\OldSubsection}
+
+\begin{document}
+
+% Front matter (unnumbered)
+\input{titlepage}
+
+\chapter*{Declaration}\addcontentsline{toc}{chapter}{Declaration}
+\input{declaration}
+
+\chapter*{Acknowledgements}\addcontentsline{toc}{chapter}{Acknowledgements}
+\input{acknowledgements}
+
+\chapter*{Abstract}\addcontentsline{toc}{chapter}{Abstract}
+\input{abstract}
+
+% ToC/LoF/LoT with plain headers
+\begingroup\pagestyle{plain}
+\tableofcontents
+\listoffigures
+\listoftables
+\endgroup
+
+% Optional live recount before showing (requires shell-escape)
+% \Recount
+% \noindent\textbf{Word count: \WordCount}
+
+% Chapters
+\clearpage
+\chapter{Introduction}
+\input{chapters/1-introduction}
+
+\clearpage
+\chapter{Literature Review}
+\input{chapters/2-literature_review}
+
+\clearpage
+\chapter{Methodology}
+\input{chapters/3-methodology}
+
+\clearpage
+\chapter{Implementation and Deployment}
+\input{chapters/4-implementation_deployment}
+
+\clearpage
+\chapter{Results}
+\input{chapters/5-results}
+
+\clearpage
+\chapter{Discussion}
+\input{chapters/6-discussion}
+
+\clearpage
+\chapter{Conclusion}
+\input{chapters/7-conclusion}
+
+% Appendices
+\clearpage
+\appendix
+\chapter{Supplementary Materials}
+\input{appendices/AppendixA}
+
+% References
+% \printbibliography
+
+\end{document}
