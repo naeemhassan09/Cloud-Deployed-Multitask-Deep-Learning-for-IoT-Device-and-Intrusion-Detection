@@ -1,54 +1,130 @@
 % chapters/introduction.tex
 \section{Background and Motivation}
-The Internet of Things (IoT) represents one of the most transformative technological evolutions of the modern era. By 2025, it is estimated that over 75 billion interconnected IoT devices will be active globally, spanning smart homes, industrial control systems, healthcare, and critical infrastructure \parencite{Laghari2024}. This unprecedented interconnectivity has also expanded the digital attack surface, making IoT environments increasingly vulnerable to malicious activity. Attacks such as Distributed Denial of Service (DDoS), botnets, ransomware, and spoofing continue to exploit weak authentication, resource constraints, and inconsistent vendor security practices \parencite{Patil2025, Nazir2025}.  
 
-Traditional cybersecurity mechanisms such as rule-based Intrusion Detection Systems (IDS) are inadequate for IoT networks because they rely on predefined signatures and cannot adapt to evolving threat patterns. Machine learning-based intrusion detection methods have shown strong potential, but their generalization across heterogeneous IoT devices remains limited due to non-standard traffic characteristics and low device processing power \parencite{Alsubaei2025}. Furthermore, maintaining high detection accuracy while minimizing latency and computational overhead is critical for real-time protection in production systems.
+\subsection{The IoT Landscape and Security Challenges}
+By 2025, more than 75~billion Internet of Things (IoT) devices are expected to be active globally, spanning smart homes, healthcare systems, industrial automation, and critical infrastructure \parencite{Laghari2024}. This explosive growth represents one of the largest technological transitions in networked computing, shifting control from centralised servers to decentralised devices operating in dynamic, often unsecured environments.  
+\vspace{0.2cm}
 
-Recent advances in deep learning — particularly Convolutional Neural Networks (CNNs) and Transformer models — offer powerful means to extract spatial and temporal relationships within network traffic. CNNs excel at identifying spatial dependencies across packet features, whereas Transformer architectures capture sequential dependencies over time \parencite{Ullah2023}. Combining both in a shared encoder enables simultaneous learning of device-specific fingerprints and anomalous behaviour patterns. Such multitask learning frameworks can reduce redundancy, improve efficiency, and strengthen generalization across related security tasks.
+\begin{figure}[h!]
+    \centering
+\includegraphics[width=0.85\textwidth,keepaspectratio]{figures/Fig-1.png}
+    \vspace{0.5cm}
+    \caption{Global growth of Internet of Things (IoT) devices from 2015 to 2025. 
+    Data adapted from \parencite{Statista2024}.}
+    \label{fig:iot-growth}
+\end{figure}
 
-However, many AI-based intrusion detection systems still function as opaque “black boxes,” limiting their adoption in critical applications. Stakeholders require transparency to understand model decisions, validate security alerts, and ensure regulatory compliance. The European Union Artificial Intelligence Act (EU AI Act) mandates that high-risk AI systems, such as those used in cybersecurity, must be transparent, robust, and auditable. Articles 15 and 18 specifically require systems to demonstrate accuracy, resilience, and traceable decision-making \parencite{Nolte2025}.  
+IoT ecosystems differ sharply from traditional enterprise networks: they integrate diverse devices with heterogeneous hardware, protocols, and firmware designs. Such heterogeneity limits standardisation and complicates unified security policies. The distributed nature of IoT infrastructure, often combined with limited update mechanisms and exposure to public networks, significantly expands the potential attack surface.
+\vspace{0.2cm}
+Cyberattacks against IoT deployments have increased in both frequency and sophistication. Common vectors include Distributed Denial of Service (DDoS), botnet infiltration, spoofing, ransomware, and data exfiltration attacks exploiting weak authentication or firmware vulnerabilities \parencite{Nazir2025, Patil2025}. Historical events such as the 2016 Mirai botnet attack, which compromised more than 600,000 consumer devices, revealed the cascading risks posed by poorly secured IoT nodes. Recent research indicates that attackers are adopting zero-day exploits and adaptive malware that leverage device-specific behaviours for persistence within IoT networks.
+\vspace{0.2cm}
+The consequences of IoT security breaches extend beyond data loss or system downtime. Compromised industrial controllers or medical sensors may directly endanger physical safety. Regulatory non-compliance under frameworks such as GDPR or CCPA can incur severe financial penalties, while reputational damage may lead to lasting business impact. The convergence of operational technology (OT) and information technology (IT) further amplifies the risk, as insecure IoT endpoints often act as entry points into broader enterprise networks.
 
-In this context, the integration of explainable AI (XAI) techniques becomes essential. Lightweight feature attribution methods, such as SHAP (Shapley Additive Explanations), can highlight which network features contribute most to model predictions. When combined with automated monitoring and logging pipelines, these methods enable transparency and accountability without compromising performance.  
+\vspace{0.2cm}
+\begin{table}[h!]
+\centering
+\begin{tabular}{@{}p{5cm}p{10cm}@{}}
+\toprule
+\textbf{Attack Type} & \textbf{Typical Example / Target} \\ \midrule
+DDoS / Botnet & Mirai, BASHLITE—massive traffic floods via cameras or routers \\
+Spoofing & ARP, DNS, or IP spoofing to hijack communication \\
+Reconnaissance & Port scanning and OS fingerprinting to identify vulnerable devices \\
+Web-Based & SQL injection, XSS in IoT control panels \\
+Firmware Manipulation & Uploading malicious firmware via unsecured update channels \\ \bottomrule
+\end{tabular}
+\caption{Representative IoT attack categories \parencite{Gueriani2024}.}
+\end{table}
 
-This research addresses these challenges by developing a cloud-deployed multitask deep learning framework capable of identifying IoT devices and detecting intrusions simultaneously. The framework employs a CNN–Transformer shared encoder trained on the CIC IoT-IDAD 2024 dataset and benchmarks its performance against established single-task models such as XGBoost, BiLSTM, and TabNet. The trained model is packaged as a FastAPI microservice, containerized with Docker, deployed on AWS ECS, and continuously monitored via Prometheus and Grafana. This end-to-end integration demonstrates not only model performance but also operational feasibility and scalability in real-world cloud environments.
+\subsection{Limits of Traditional Intrusion Detection}
+Signature-based intrusion detection remains the dominant security mechanism in conventional IT environments. These systems identify attacks by matching observed traffic patterns to known signatures. However, they fail when confronted with novel or polymorphic malware. Updating large rule sets in real time is computationally prohibitive for most IoT gateways or edge nodes. The diversity of communication protocols—ranging from MQTT and CoAP to Zigbee, LoRaWAN, and BLE—renders universal rule coverage unrealistic.  
+\vspace{0.2cm}
+
+Rule-based anomaly detection suffers similar rigidity. Although such systems encode expert heuristics, they lack adaptability and require manual tuning whenever new devices or behaviours emerge. Given the dynamic nature of IoT deployments, these static systems rapidly lose relevance.
+
+\subsection{Machine Learning and the Single-Task Constraint}
+Machine-learning (ML) methods improve over rule-based systems by inferring complex decision boundaries from data. Techniques such as Random Forests, Support Vector Machines, and early feedforward neural networks have demonstrated strong performance in distinguishing benign and malicious traffic. Nevertheless, their designs typically focus on a single analytic goal—either intrusion detection or device classification.  
+
+This single-task paradigm presents several limitations:
+\begin{enumerate}
+    \item It ignores cross-task relationships; information about device identity can aid detection accuracy, while abnormal activity can flag compromised devices.
+    \item Single-task models require complete retraining when the threat landscape changes, introducing downtime and resource overhead.
+    \item Maintaining multiple models in production increases latency, memory usage, and orchestration complexity, which is impractical for resource-constrained IoT gateways.
+\end{enumerate}
+
+\subsection{The Case for Multitask Deep Learning}
+Deep learning has advanced intrusion detection by automating feature extraction from raw network traffic. Hybrid models that combine Convolutional Neural Networks (CNNs) and recurrent or attention-based layers capture both spatial correlations and temporal dynamics. For instance, CNN–LSTM architectures have achieved detection accuracies above 98\% on benchmark datasets such as CICIoT 2023 by modelling spatial–temporal dependencies \parencite{Gueriani2024}. Transformers further extend this capability through self-attention, learning contextual dependencies across long traffic sequences \parencite{Ullah2023}.  
+\vspace{0.2cm}
+
+Multitask learning (MTL) generalises these ideas by sharing feature representations across related tasks. A single CNN–Transformer encoder can feed two lightweight heads: one for device identification and one for intrusion detection. MTL offers three major advantages:
+\begin{itemize}
+    \item \textbf{Efficiency:} Shared layers reduce redundant computation, improving inference speed and memory efficiency.
+    \item \textbf{Generalisation:} Shared inductive bias helps the model adapt to unseen devices or attack types.
+    \item \textbf{Operational simplicity:} A unified model simplifies deployment pipelines and monitoring.
+\end{itemize}
+
+\textbf{[Insert Figure 2: Conceptual diagram of the proposed multitask CNN–Transformer architecture.]}  
+\emph{Suggestion: show shared encoder block feeding two heads—(1) IoT device ID, (2) intrusion classification—annotated with flow of data from input features to predictions.}
+
+\subsection{Contribution and Integration into Cloud Environments}
+Building on these insights, this research develops a \emph{cloud-deployed multitask CNN–Transformer} framework capable of simultaneous IoT device identification and intrusion detection. The model is trained and evaluated on the CIC IoT-IDAD 2024 dataset, which includes benign and attack flows across multiple IoT device classes and attack families.  
+\vspace{0.2cm}
+
+Key contributions include:
+\begin{itemize}
+    \item Implementing a multitask architecture optimised for accuracy and latency under realistic network workloads.
+    \item Benchmarking against strong single-task baselines—XGBoost, BiLSTM, and TabNet—to quantify trade-offs in computational efficiency and scalability.
+    \item Deploying the trained model as a containerised FastAPI microservice on AWS Elastic Container Service (ECS) with automated CI/CD pipelines for reproducibility.
+    \item Integrating Prometheus and Grafana for continuous observability and performance tracking in cloud production environments.
+\end{itemize}
+
+This approach bridges the gap between experimental ML research and production-grade IoT security systems.
 
 \section{Problem Statement}
-The security of IoT ecosystems remains a critical concern due to device heterogeneity, constrained hardware, and rapidly evolving cyber threats. Existing Intrusion Detection Systems (IDS) are often optimized for enterprise networks and struggle to adapt to the dynamic nature of IoT communications, where lightweight and real-time detection is mandatory. Furthermore, most models treat IoT device identification and intrusion detection as separate tasks, resulting in redundant computation and limited contextual awareness.  
+IoT infrastructures present distinct challenges relative to traditional networks. They consist of thousands of low-power devices—sensors, cameras, thermostats, or controllers—communicating asynchronously through heterogeneous protocols. Variations in manufacturer security practices, weak firmware validation, and limited encryption support exacerbate vulnerabilities. Firmware updates are inconsistent, leaving many devices susceptible to known exploits long after fixes exist.
 
-Machine learning-based intrusion detection has achieved promising results but typically focuses on single-task architectures. While these models can identify known attack patterns, they fail to leverage shared information between device-level behaviour and malicious activity signatures. This isolation leads to inefficiencies in both training and inference and restricts the ability to detect unseen attack variants.  
+Conventional IDS frameworks, designed for well-provisioned enterprise servers, do not scale down to these environments. Their assumptions of stable topology and uniform configuration fail in distributed IoT systems where devices may appear, disappear, or behave differently based on context. Attack vectors such as botnet recruitment, firmware manipulation, and side-channel exploitation require models that generalise beyond static signatures.
 
-Another challenge is the lack of explainability and governance in current AI-driven IDS solutions. Many deep models achieve high accuracy but provide little insight into the rationale behind their predictions. This opacity limits operator trust, complicates debugging, and poses compliance risks under the EU AI Act, which requires transparent and auditable decision-making processes for high-risk systems.  
+Furthermore, treating device identification and intrusion detection as separate functions doubles processing overhead. Independent models overlook the interdependence between device behaviour and threat manifestation. This redundancy increases latency and weakens detection sensitivity.
 
-In addition, practical deployment challenges persist. Many academic models overlook production-readiness factors such as latency, resource consumption, CI/CD automation, and cloud observability. Without operational integration, even high-performing models fail to transition from research prototypes to deployable cybersecurity solutions.  
+Most research still evaluates models offline on benchmark datasets, ignoring deployment realities. Few studies report inference latency, resource usage, or continuous monitoring metrics. As a result, promising prototypes remain laboratory artefacts, not deployable security solutions.
 
-Therefore, there is a need for a unified, explainable, and cloud-deployable multitask model that simultaneously performs IoT device identification and intrusion detection efficiently, while maintaining interpretability, scalability, and compliance with modern AI governance standards.
+Hence, there is a critical need for a unified, scalable, and cloud-operational deep-learning framework that can perform both tasks concurrently, maintaining low latency, interpretability of performance metrics, and operational reliability.
 
-\section{Aim}
-The aim of this research is to design, implement, and evaluate a multitask deep learning framework that can simultaneously perform IoT device identification and intrusion detection. The framework seeks to achieve higher accuracy and lower latency than comparable single-task models while maintaining lightweight interpretability through SHAP-based explanations. It will be deployed as a scalable FastAPI microservice on AWS ECS with full CI/CD automation and real-time monitoring to validate its practical viability.
+\section{Research Aim}
+The aim of this research is to design, implement, and evaluate a multitask CNN–Transformer framework for concurrent IoT device identification and intrusion detection. The framework should achieve high classification accuracy and low inference latency while supporting scalable deployment through FastAPI microservices on AWS ECS, automated CI/CD, and real-time monitoring with Prometheus and Grafana.
 
-\section{Objectives}
-To achieve this aim, the research pursues the following specific objectives:
+\section{Research Objectives}
 \begin{enumerate}
-    \item \textbf{Develop and train a shared CNN–Transformer encoder} using the CIC IoT-IDAD 2024 dataset to jointly perform device identification and intrusion detection, optimizing for accuracy, precision, recall, F1-score, and AUC.
-    \item \textbf{Benchmark multitask performance} against single-task baselines (XGBoost, BiLSTM, TabNet) to assess computational efficiency, scalability, and latency improvements.
-    \item \textbf{Integrate lightweight SHAP-based explainability} for model interpretability, providing visual and numerical insights into feature importance without extensive computational overhead.
-    \item \textbf{Deploy the framework as a containerized FastAPI microservice} using Docker and AWS ECS, with continuous integration and deployment via automated CI/CD pipelines.
-    \item \textbf{Implement monitoring and evaluation pipelines} using Prometheus and Grafana to track model performance, latency, and system reliability in real time.
+    \item \textbf{Dataset Analysis and Preparation:} Conduct exploratory data analysis on the CIC IoT-IDAD 2024 dataset to identify device categories, attack types, feature distributions, and class imbalance. Implement preprocessing pipelines including normalisation, feature encoding, and stratified splitting.
+    \item \textbf{Multitask Architecture Development:} Design a hybrid CNN–Transformer encoder with task-specific heads for device identification and intrusion detection. Experiment with depth, attention mechanisms, and regularisation strategies.
+    \item \textbf{Model Training and Optimisation:} Configure multitask loss functions and optimisation algorithms. Apply cross-validation and evaluate model convergence, preventing overfitting through dropout and early stopping.
+    \item \textbf{Baseline Benchmarking:} Train and compare XGBoost, BiLSTM, and TabNet models to the proposed framework using accuracy, F1-score, ROC-AUC, latency, and memory metrics.
+    \item \textbf{Production Deployment:} Develop a FastAPI service exposing REST endpoints. Containerise the model with Docker and deploy to AWS ECS with load balancing and health checks. Automate testing and deployment through GitHub Actions.
+    \item \textbf{Monitoring and Observability:} Integrate Prometheus and Grafana dashboards to monitor request throughput, latency, system load, and error rates. Configure alerting for anomaly detection.
+    \item \textbf{Performance Evaluation:} Conduct stress tests under varying network loads to assess scalability and resilience. Analyse outcomes to identify limitations and areas for future research.
 \end{enumerate}
 
 \section{Scope and Delimitations}
-The scope of this research is carefully bounded to ensure a focused and reproducible study. It concentrates on the training, evaluation, and deployment of a multitask CNN–Transformer model for IoT device identification and intrusion detection using the publicly available CIC IoT-IDAD 2024 dataset.  
+\subsection{Dataset}
+\textbf{Included:} CIC IoT-IDAD 2024, a publicly available dataset covering multiple IoT devices and attack categories.  
+\textbf{Excluded:} Proprietary or undisclosed datasets, synthetic data generation, or other domain-specific traffic not aligned with the target scenario.
 
-The inclusion and exclusion boundaries are defined as follows:
+\subsection{Model Architecture}
+\textbf{Included:} Multitask CNN–Transformer with shared encoder; baselines XGBoost, BiLSTM, TabNet.  
+\textbf{Excluded:} Generative adversarial networks, reinforcement learning, LLM-based log analysis, graph neural networks, and federated learning due to time and computational constraints.
 
-\begin{itemize}
-    \item \textbf{Dataset:} Only the CIC IoT-IDAD 2024 dataset is used for model development and testing. No proprietary or undisclosed datasets are included to ensure reproducibility and ethical compliance.
-    \item \textbf{Models:} The study includes a multitask CNN–Transformer as the proposed model and compares it with single-task baselines — XGBoost, BiLSTM, and TabNet. Generative Adversarial Networks (GANs), reinforcement learning, or large-scale language models are excluded to maintain scope alignment and computational feasibility.
-    \item \textbf{Deployment:} The system is deployed as a cloud-based FastAPI microservice on AWS ECS, with Docker-based containerization, CI/CD automation, and monitoring using Prometheus and Grafana. Edge, FPGA, or on-device deployments are excluded due to hardware variability and time constraints.
-    \item \textbf{Explainability:} Lightweight SHAP visualizations are implemented for interpretability. Comprehensive fairness audits or multi-model interpretability frameworks are beyond the project scope.
-    \item \textbf{Evaluation Metrics:} The study evaluates models using accuracy, precision, recall, F1-score, AUC, and inference latency. Metrics such as energy efficiency or carbon footprint are excluded due to limited relevance to research objectives.
-\end{itemize}
+\subsection{Deployment}
+\textbf{Included:} Docker containerisation, AWS ECS orchestration, CI/CD (GitHub Actions), FastAPI interface, and monitoring with Prometheus and Grafana.  
+\textbf{Excluded:} Edge deployment, FPGA/ASIC acceleration, or non-AWS platforms (Azure, GCP).
 
-This delimitation ensures that the research remains concentrated on delivering an end-to-end cloud-deployable multitask IDS framework that is experimentally validated, interpretable, and aligned with operational IoT security needs.  
+\subsection{Evaluation Metrics}
+\textbf{Included:} Accuracy, precision, recall, F1-score, ROC-AUC, latency (mean/percentile), throughput, memory utilisation, and confusion matrices.  
+\textbf{Excluded:} Energy consumption, cost analysis, adversarial robustness, and formal verification.
 
-By integrating multitask deep learning, explainability, and cloud-native deployment, the study contributes a practical and academically rigorous artefact demonstrating how IoT security systems can evolve toward efficiency, transparency, and compliance within real-world infrastructures.
+\subsection{Regulatory and Compliance}
+\textbf{Included:} Discussion of privacy (GDPR, CCPA) and secure handling of traffic data.  
+\textbf{Excluded:} Full compliance audits or certification studies (ISO 27001, SOC 2).
+
+This scoped design ensures depth and feasibility within academic and resource constraints while producing a reproducible, cloud-operational multitask intrusion detection framework.
+
+% End of introduction.tex
