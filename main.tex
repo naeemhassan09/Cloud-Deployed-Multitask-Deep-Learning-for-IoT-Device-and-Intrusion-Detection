@@ -26,8 +26,12 @@
 \usepackage{csquotes}
 \usepackage[backend=biber,style=authoryear,maxcitenames=2,maxbibnames=6]{biblatex}
 \addbibresource{references.bib}
-
-
+\setlength{\bibhang}{1.5em}          % indent for lines after the first
+\setlength{\bibitemsep}{0.6\baselineskip} % vertical space between items
+\defbibheading{references}{%
+  \section*{References}%
+  \addcontentsline{toc}{section}{References}%
+}
 
 % Headers/footers
 \usepackage{fancyhdr}
@@ -127,13 +131,15 @@
 \chapter{Conclusion}
 \input{chapters/7-conclusion}
 
+% References
+\clearpage
+\printbibliography[heading=references]
+\clearpage
+
 % Appendices
 \clearpage
 \appendix
 \chapter{Supplementary Materials}
 \input{appendices/AppendixA}
-
-% References
-\printbibliography
 
 \end{document}

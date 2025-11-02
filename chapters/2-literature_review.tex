@@ -1,29 +1,55 @@
+% --- chapters/literature_review.tex ---
 \section{IoT Security Landscape}
-\subsection{Threat Vectors and Device Constraints}
-\subsection{Datasets and Traffic Modalities}
 
-\section{Intrusion Detection in IoT}
-\subsection{Classical ML vs Deep Learning}
-\subsection{CNN, RNN, and Transformer Approaches}
+The rapid expansion of the Internet of Things (IoT) has produced a highly heterogeneous ecosystem of interconnected devices across smart homes, healthcare, manufacturing, and infrastructure networks. These environments exhibit constrained computational capacity, inconsistent firmware security, and fragmented vendor standards. \textcite{Laghari2024} and \textcite{Nazir2025} report that this diversity has increased the attack surface and complicated the implementation of standardised defence mechanisms. Furthermore, resource limitations and protocol variation diminish the effectiveness of conventional rule-based intrusion detection systems.
+Although these studies offer an overview of the expanding risk environment, they do not propose deployable or scalable frameworks. This research builds upon these foundations by introducing an operational multitask deep-learning framework that performs both device identification and intrusion detection using the CIC~IoT--IDAD~2024 dataset.
+
+\section{Intrusion Detection in IoT Networks}
+
+\subsection{Classical Machine Learning versus Deep Learning}
+
+Previous intrusion-detection research utilized classical algorithms such as Random Forest and Support Vector Machines, which achieved satisfactory results on small datasets but encountered difficulties with high-dimensional, non-linear traffic patterns. \textcite{Alsubaei2025} demonstrated that deep-learning models surpass traditional methods for IoT intrusion detection; however, their approach was limited to single-task learning and required significant computational resources. The proposed multitask architecture addresses these limitations by jointly learning device and attack representations, thereby reducing redundancy and enhancing generalisation.
+
+\subsection{CNN, RNN and Transformer-Based Methods}
+
+Hybrid architectures that combine convolutional and sequential models have become prevalent in IoT intrusion detection. \textcite{Gueriani2024} employed a CNN--LSTM structure that achieved high accuracy on benchmark datasets, whereas \textcite{Ullah2023} introduced a transformer network tailored for MQTT-enabled IoT traffic. Both approaches demonstrate robust pattern recognition capabilities; however, their evaluations are restricted to offline settings or protocol-specific datasets.
+\textcite{Kodadi2025} extended transformer-based intrusion detection to software-defined networking (SDN) and IoT networks, confirming the effectiveness of attention mechanisms. However, this work did not address issues related to generalisation or multitask learning.
+The present study integrates convolutional and transformer components within a unified encoder, facilitating both spatial and temporal feature extraction across diverse IoT traffic.
+
 \subsection{Hybrid and Two-Stage Models}
 
-\section{Explainability and Governance}
-\subsection{XAI Methods for IDS}
-\subsection{EU AI Act: Articles 15 and 18}
-\subsection{Auditability and Traceability}
+Previous research has investigated multi-stage and ensemble architectures to improve accuracy. \textcite{Patil2025} introduced a hybrid CNN--LSTM model that achieved robust results, although latency and resource constraints were not addressed.
+\textcite{Hnamte2023} developed an LSTM--autoencoder for anomaly detection that enhanced sensitivity but demanded substantial computational resources.
+To address these limitations, the proposed CNN-Transformer encoder is designed to achieve inference latency that will be significantly lower, while maintaining competitive classification performance.
+Furthermore, \textcite{Dinh2023} demonstrated that multitask learning with constrained twin variational autoencoders can enhance efficiency. This research applies the multitask learning principle within a transformer-based framework trained on flow-level data, thereby extending its applicability to deployable environments.
 
-\section{Deployment Patterns}
-\subsection{Microservices and Cloud-Native IDS}
-\subsection{Edge vs Cloud Trade-offs}
+\section{Cloud-Native and Deployment Practices}
 
-\section{Multitask and Federated Learning}
-\subsection{MTL for Related Security Tasks}
-\subsection{Federated Learning and Privacy}
+Recent work highlights the shift from experimental modelling to deployable microservice architectures. 
+\textcite{Naayini2025} discussed containerised pipelines for scalable AI systems using Docker and Kubernetes, while \textcite{Caleanu2024} outlined web application deployment of healthcare models. 
+While these studies address operationalisation, they do not cover intrusion detection. This project adapts their approaches to IoT cybersecurity by deploying the multitask CNN-Transformer model as a FastAPI microservice on AWS ECS, with CI/CD automation and real-time monitoring using Prometheus and Grafana.
+This ensures continuous observability and reproducibility, aligning deep-learning research with production-level reliability.
 
-\section{Evaluation Practices}
-\subsection{Metrics, Calibration, Robustness}
-\subsection{Latency and Resource Constraints}
+\section{Multitask and Federated Learning Methods}
 
-\section{Synthesis and Gaps}
-\subsection{Integration Gap (MTL + XAI + Compliance)}
-\subsection{Operationalization Gap (Monitoring)}
+Multitask learning (MTL) and federated approaches aim to reduce model redundancy and increase efficiency.
+\textcite{Selvam2025} employed federated CNN--RNN architectures for distributed intrusion detection, addressing privacy but not inter-task sharing. 
+Similarly, \textcite{Dinh2023} verified that shared latent representations improve intrusion detection accuracy in constrained IoT systems. 
+This study uses shared-encoder MTL in a single-site setup to optimize feature sharing between device identification and intrusion detection. This approach lowers computational load and enhances adaptation to new devices and attack types.
+
+\section{Evaluation Practices and Research Gaps}
+
+Modern IoT security research emphasises thorough benchmarking to ensure fair comparisons and practical applicability. 
+\textcite{Tseng2024} employed multi-class transformer models on CIC--IoT--2023, setting new standards for accuracy and macro-F1 metrics. 
+\textcite{Sajid2024} extended evaluation protocols to include resource utilisation and latency testing, while \textcite{Mahdi2025} examined the robustness of hybrid deep learning under adversarial noise. 
+Despite these advances, many studies remain laboratory prototypes with a limited focus on deployability and runtime performance. 
+The literature collectively indicates three unresolved deficiencies: 
+
+\begin{enumerate}
+    \item Integration gap most studies isolate device identification and intrusion detection, duplicating computation and complicating deployment. 
+    \item Operationalisation gap accuracy is prioritised over latency, scalability, and monitoring, limiting real-world adoption. 
+    \item Multitask efficiency gap shared learning between related IoT security tasks remains underexplored. 
+\end{enumerate}
+
+The proposed research addresses these gaps by unifying device and intrusion tasks in a single CNN-Transformer encoder, deploying it as a monitored microservice in a cloud environment, and benchmarking accuracy and latency using the CIC-IoT-IDAD-2024 dataset. 
+This alignment of model design, evaluation, and deployment establishes a reproducible pathway for practical IoT intrusion detection in cloud-native systems.
